@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Association Memory Game</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .description {
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-size: 18px;
+        }
+        
+        .game-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .word-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #3498db;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .input-container {
+            margin: 20px 0;
+        }
+        
+        input {
+            padding: 15px;
+            width: 100%;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .game-stats {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+        }
+        
+        .game-stats h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        
+        .results-container {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .results-container h3 {
+            color: #2c3e50;
+        }
+        
+        .word-chain {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eaeaea;
+        }
+        
+        .word-pair {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background-color: #e8f4fd;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .instructions {
+            background-color: #f1f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .timer {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            color: #e74c3c;
+        }
+        
+        .fadeIn {
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .highlight {
+            animation: highlight 1s;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: #ffeb3b; }
+            100% { background-color: transparent; }
+        }
+        
+        .difficulty-selector {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .difficulty-btn {
+            background-color: #ddd;
+            color: #333;
+            border: none;
+            padding: 10px 15px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .difficulty-btn.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Word Association Memory Game</h1>
+        
+        <div class="description">
+            <p>Challenge your memory and creativity with this unique word association game! Each word you enter must be associated with the previous word. How long a chain can you remember?</p>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play:</h3>
+            <ol>
+                <li>You'll start with a random word.</li>
+                <li>Enter a word that you associate with it.</li>
+                <li>Remember your word chain as it grows.</li>
+                <li>When challenged, recall the entire chain in order.</li>
+                <li>The longer you go, the harder it gets!</li>
+            </ol>
+        </div>
+        
+        <div class="difficulty-selector">
+            <p>Select difficulty:</p>
+            <button class="difficulty-btn" data-level="easy">Easy</button>
+            <button class="difficulty-btn active" data-level="medium">Medium</button>
+            <button class="difficulty-btn" data-level="hard">Hard</button>
+        </div>
+        
+        <div class="game-container">
+            <div class="word-display">Press Start to Begin</div>
+            
+            <div class="timer"></div>
+            
+            <div class="input-container">
+                <input type="text" id="wordInput" placeholder="Type your associated word here" disabled>
+            </div>
+            
+            <div class="button-container">
+                <button id="startBtn">Start Game</button>
+                <button id="submitBtn" disabled>Submit</button>
+            </div>
+            
+            <div class="game-stats">
+                <h3>Current Chain Length: <span class="score-display">0</span></h3>
+            </div>
+        </div>
+        
+        <div class="results-container">
+            <h3>Your Word Association Chain:</h3>
+            <div class="word-chain"></div>
+        </div>
+    </div>
+    
+    <footer>
+        &copy; 2025 Word Association Memory Game
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game variables
+            const startWords = ["tree", "blue", "book", "happy", "cloud", "music", "water", "moon", "fire", "dream", "road", "light"];
+            let currentChain = [];
+            let gameActive = false;
+            let recallMode = false;
+            let recallIndex = 0;
+            let difficulty = "medium";
+            let timerInterval;
+            let timeRemaining;
+            
+            // DOM elements
+            const wordDisplay = document.querySelector('.word-display');
+            const wordInput = document.getElementById('wordInput');
+            const startBtn = document.getElementById('startBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const scoreDisplay = document.querySelector('.score-display');
+            const resultsContainer = document.querySelector('.results-container');
+            const wordChain = document.querySelector('.word-chain');
+            const timerElement = document.querySelector('.timer');
+            const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+            
+            // Set difficulty
+            difficultyBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (gameActive) return;
+                    
+                    // Remove active class from all buttons
+                    difficultyBtns.forEach(b => b.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    difficulty = this.dataset.level;
+                });
+            });
+            
+            // Start game
+            startBtn.addEventListener('click', function() {
+                if (gameActive) {
+                    resetGame();
+                    startBtn.textContent = "Start Game";
+                    return;
+                }
+                
+                startGame();
+                startBtn.textContent = "Reset Game";
+            });
+            
+            // Submit word
+            submitBtn.addEventListener('click', submitWord);
+            
+            // Submit on Enter
+            wordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && submitBtn.disabled === false) {
+                    submitWord();
+                }
+            });
+            
+            function startGame() {
+                gameActive = true;
+                recallMode = false;
+                currentChain = [];
+                
+                // Reset display
+                resultsContainer.style.display = 'none';
+                wordChain.innerHTML = '';
+                scoreDisplay.textContent = '0';
+                
+                // Select random start word
+                const randomIndex = Math.floor(Math.random() * startWords.length);
+                const startWord = startWords[randomIndex];
+                
+                // Add first word to chain
+                currentChain.push(startWord);
+                
+                // Display first word
+                wordDisplay.textContent = startWord;
+                wordDisplay.classList.add('fadeIn');
+                
+                // Enable input
+                wordInput.disabled = false;
+                submitBtn.disabled = false;
+                wordInput.focus();
+                
+                // Clear input
+                wordInput.value = '';
+            }
+            
+            function submitWord() {
+                const userInput = wordInput.value.trim().toLowerCase();
+                
+                if (userInput === '') return;
+                
+                if (recallMode) {
+                    // Check if recall is correct
+                    if (userInput === currentChain[recallIndex]) {
+                        wordDisplay.textContent = "Correct!";
+                        recallIndex++;
+                        
+                        // If all words recalled correctly
+                        if (recallIndex >= currentChain.length) {
+                            endRecallMode(true);
+                        } else {
+                            // Ask for next word in recall
+                            clearInterval(timerInterval);
+                            setTimeout(() => {
+                                wordDisplay.textContent = `Word ${recallIndex + 1}?`;
+                                startTimer();
+                                wordInput.value = '';
+                                wordInput.focus();
+                            }, 1000);
+                        }
+                    } else {
+                        // Failed recall
+                        wordDisplay.textContent = `Incorrect! It was "${currentChain[recallIndex]}"`;
+                        endRecallMode(false);
+                    }
+                } else {
+                    // Add word to chain
+                    currentChain.push(userInput);
+                    scoreDisplay.textContent = currentChain.length - 1;
+                    
+                    // Display word
+                    wordDisplay.textContent = userInput;
+                    wordInput.value = '';
+                    wordInput.focus();
+                    
+                    // Check if it's time for recall
+                    if (shouldStartRecall()) {
+                        startRecallMode();
+                    }
+                }
+            }
+            
+            function shouldStartRecall() {
+                // Determine when to start recall based on difficulty
+                switch(difficulty) {
+                    case "easy":
+                        return currentChain.length > 5 && Math.random() < 0.3;
+                    case "medium":
+                        return currentChain.length > 3 && Math.random() < 0.4;
+                    case "hard":
+                        return currentChain.length > 2 && Math.random() < 0.5;
+                    default:
+                        return currentChain.length > 3 && Math.random() < 0.4;
+                }
+            }
+            
+            function startRecallMode() {
+                recallMode = true;
+                recallIndex = 0;
+                
+                wordDisplay.textContent = "Time to recall! What was Word 1?";
+                wordInput.value = '';
+                wordInput.focus();
+                
+                startTimer();
+            }
+            
+            function startTimer() {
+                // Set timer based on difficulty
+                switch(difficulty) {
+                    case "easy":
+                        timeRemaining = 20;
+                        break;
+                    case "medium":
+                        timeRemaining = 15;
+                        break;
+                    case "hard":
+                        timeRemaining = 10;
+                        break;
+                    default:
+                        timeRemaining = 15;
+                }
+                
+                timerElement.textContent = `Time remaining: ${timeRemaining}s`;
+                
+                clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    timerElement.textContent = `Time remaining: ${timeRemaining}s`;
+                    
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        wordDisplay.textContent = `Time's up! It was "${currentChain[recallIndex]}"`;
+                        endRecallMode(false);
+                    }
+                }, 1000);
+            }
+            
+            function endRecallMode(success) {
+                clearInterval(timerInterval);
+                timerElement.textContent = '';
+                
+                setTimeout(() => {
+                    if (success) {
+                        wordDisplay.textContent = "Great job! Continue your chain.";
+                        recallMode = false;
+                        wordInput.value = '';
+                        wordInput.focus();
+                    } else {
+                        displayResults();
+                        resetGame();
+                        startBtn.textContent = "Start Game";
+                    }
+                }, 2000);
+            }
+            
+            function displayResults() {
+                resultsContainer.style.display = 'block';
+                wordChain.innerHTML = '';
+                
+                // Show the whole chain
+                for (let i = 0; i < currentChain.length; i++) {
+                    const wordPair = document.createElement('div');
+                    wordPair.className = 'word-pair';
+                    
+                    if (i === 0) {
+                        wordPair.textContent = `Starting word: ${currentChain[i]}`;
+                    } else {
+                        wordPair.textContent = `${i}: ${currentChain[i-1]} → ${currentChain[i]}`;
+                    }
+                    
+                    wordChain.appendChild(wordPair);
+                }
+            }
+            
+            function resetGame() {
+                gameActive = false;
+                recallMode = false;
+                currentChain = [];
+                clearInterval(timerInterval);
+                timerElement.textContent = '';
+                
+                wordDisplay.textContent = "Press Start to Begin";
+                wordInput.disabled = true;
+                submitBtn.disabled = true;
+                wordInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>
