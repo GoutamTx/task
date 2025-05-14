@@ -45,11 +45,11 @@ pipeline {
          steps{
              sh '''
              ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${EC2_USER}@${EC2_INSTANCE_IP}
-             sudo apt install apache2
+              apt install apache2
              cd /tmp &&
                         curl -u $ART_USER:$ART_PASS -O "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/${ARTIFACT_NAME}.zip" &&
                         unzip -o ${ARTIFACT_NAME}.zip -d /var/www/html/ &&
-                        sudo systemctl restart apache2
+                        systemctl restart apache2
              
              '''
          }
