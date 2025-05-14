@@ -7,7 +7,7 @@ pipeline {
         ARTIFACT_NAME = 'artifact'
         EC2_INSTANCE_IP = '54.165.198.236'
         EC2_USER = 'ec2-user' // Adjust based on your EC2 instance's user
-        SSH_KEY_PATH = '/home/goutam/webserver.pem' // Path to your private SSH key
+        SSH_KEY_PATH = '/var/lib/jenkins/.ssh/webserver.pem' // Path to your private SSH key
     }
 
     triggers {
