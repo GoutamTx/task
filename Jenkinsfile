@@ -22,10 +22,19 @@ pipeline {
             steps {
                 sh '''
                 mkdir -p build
+                cp -r * build/
                 echo "Build ${BUILD_NUMBER}" > build/${ARTIFACT_NAME}
                 '''
             }
         }
+        stage('Package') {
+    steps {
+        sh '''
+        cd build
+        zip -r ${ZIP_NAME} .
+        '''
+    }
+}
 
         stage('Upload to Artifactory') {
             steps {
