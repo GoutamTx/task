@@ -4,7 +4,7 @@ pipeline {
     environment {
         ARTIFACTORY_URL = 'https://trialx3clu6.jfrog.io/artifactory'
         ARTIFACTORY_REPO = 'firstrepo'
-        ARTIFACT_NAME = 'artifact.zip'
+        ARTIFACT_NAME = 'artifact'
     }
 
     triggers {
@@ -18,48 +18,64 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                sh '''
-                    mkdir -p build
-                    rsync -av --exclude=build/ ./ build/
-                '''
-            }
-        }
-
         stage('Package') {
-            steps {
-                sh '''
-                    cd build
-                    if [ "$(ls -A)" ]; then
-                        zip -r ../${ARTIFACT_NAME} ./*
-                    else
-                        echo "❌ Nothing to zip. 'build/' directory is empty."
-                        exit 1
-                    fi
-                '''
-            }
-        }
+    steps {
+        sh '''
+        zip -r ${ARTIFACT_NAME} ./* || true
+        '''
+    }
+}
 
         stage('Upload to Artifactory') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'jfrog-creds', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
-                    sh '''
-                        echo "Uploading artifact to Artifactory..."
-                        curl -u $ART_USER:$ART_PASS -T ${ARTIFACT_NAME} \
-                        "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/${ARTIFACT_NAME}"
-                    '''
+                    sh """
+                        curl -u $ART_USER:$ART_PASS -T ${ARTIFACT_NAME}.zip \
+    "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/${ARTIFACT_NAME}.zip"
+
+                    """
                 }
             }
         }
     }
+}pipeline {
+    agent any
 
-    post {
-        success {
-            echo "✅ Artifact uploaded successfully to Artifactory."
+    environment {
+        ARTIFACTORY_URL = 'https://trialx3clu6.jfrog.io/artifactory'
+        ARTIFACTORY_REPO = 'firstrepo'
+        ARTIFACT_NAME = 'artifact'
+    }
+
+    triggers {
+        githubPush()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'github-creds-id', url: 'https://github.com/GoutamTx/task.git'
+            }
         }
-        failure {
-            echo "❌ Build or upload failed."
+
+        stage('Package') {
+    steps {
+        sh '''
+        zip -r ${ARTIFACT_NAME} ./* || true
+        '''
+    }
+}
+
+        stage('Upload to Artifactory') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'jfrog-creds', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
+                    sh """
+                        curl -u $ART_USER:$ART_PASS -T ${ARTIFACT_NAME}.zip \
+    "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/${ARTIFACT_NAME}.zip"
+
+                    """
+                }
+            }
         }
     }
 }
