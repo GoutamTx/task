@@ -30,7 +30,7 @@ pipeline {
     steps {
         sh '''
         cd build
-        zip -r ${ZIP_NAME} .
+        zip -r ${ARTIFACT_NAME}.zip
         '''
     }
 }
