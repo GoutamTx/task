@@ -5,6 +5,9 @@ pipeline {
         ARTIFACTORY_URL = 'https://trialx3clu6.jfrog.io/artifactory'
         ARTIFACTORY_REPO = 'firstrepo'
         ARTIFACT_NAME = 'artifact'
+        EC2_INSTANCE_IP = '54.165.198.236'
+        EC2_USER = 'ec2-user' // Adjust based on your EC2 instance's user
+        SSH_KEY_PATH = '/home/goutam/webserver.pem' // Path to your private SSH key
     }
 
     triggers {
@@ -37,5 +40,19 @@ pipeline {
                 }
             }
         }
+
+     stage('depoying on Ec2'){
+         steps{
+             sh '''
+             ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${EC2_USER}@${EC2_INSTANCE_IP}
+             sudo apt install apache2
+             cd /tmp &&
+                        curl -u $ART_USER:$ART_PASS -O "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/${ARTIFACT_NAME}.zip" &&
+                        unzip -o ${ARTIFACT_NAME}.zip -d /var/www/html/ &&
+                        sudo systemctl restart apache2
+             
+             '''
+         }
+     }
     }
 }
