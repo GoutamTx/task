@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        ARTIFACTORY_URL = 'https://trialx3clu6.jfrog.io/artifactory'
+        ARTIFACTORY_URL = 'https://trialx3clu6.jfrog.io/ui/native'
         ARTIFACTORY_REPO = 'firstrepo'
         ARTIFACT_NAME = 'artifact'
         EC2_INSTANCE_IP = '3.91.252.181'
@@ -24,7 +24,7 @@ pipeline {
         stage('Package') {
     steps {
         sh '''
-        zip -r ${ARTIFACT_NAME} ./* || true
+        zip -r artifact.zip website.html build/* || true
         '''
     }
 }
