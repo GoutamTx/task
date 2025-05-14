@@ -20,7 +20,11 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'echo "Build ${BUILD_NUMBER}" > build/${ARTIFACT_NAME}'
+                sh
+                '''
+                mkdir -p build
+                echo "Build ${BUILD_NUMBER}" > build/${ARTIFACT_NAME}
+                '''
             }
         }
 
