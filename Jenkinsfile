@@ -47,7 +47,7 @@ pipeline {
              ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${EC2_USER}@${EC2_INSTANCE_IP} <<EOF
              sudo yum install -y httpd
             cd /tmp &&
-            curl -u $ART_USER:$ART_PASS -O "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/artifact.zip" &&
+            curl -u usernameVariable:passwordVariable -O "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/artifact.zip" &&
             sudo unzip -o artifact.zip -d /var/www/html/
             sudo systemctl restart httpd
             EOF
