@@ -48,7 +48,7 @@ pipeline {
              sudo yum install -y httpd
             cd /tmp &&
             curl -u $ART_USER:$ART_PASS -O "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/artifact.zip" &&
-            sudo unzip -o ${ARTIFACT_NAME}.zip -d /var/www/html/
+            sudo unzip -o artifact.zip -d /var/www/html/
             sudo systemctl restart httpd
             EOF
              '''
