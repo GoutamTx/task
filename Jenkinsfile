@@ -22,8 +22,7 @@ pipeline {
             steps {
                 sh '''
                 mkdir -p build
-                cp -r * build/
-                echo "Build ${BUILD_NUMBER}" > build/${ARTIFACT_NAME}
+                rsync -av --exclude=build/ ./ build/
                 '''
             }
         }
