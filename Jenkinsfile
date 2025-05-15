@@ -6,8 +6,8 @@ pipeline {
         ARTIFACTORY_REPO = 'firstrepo'
         ARTIFACT_NAME = 'artifact'
         EC2_INSTANCE_IP = '3.91.252.181'
-        EC2_USER = 'ec2-user' // Adjust based on your EC2 instance's user
-        SSH_KEY_PATH = '/var/lib/jenkins/.ssh/webserver.pem' // Path to your private SSH key
+        EC2_USER = 'ec2-user'
+        SSH_KEY_PATH = '/var/lib/jenkins/.ssh/webserver.pem'
     }
 
     triggers {
@@ -22,37 +22,35 @@ pipeline {
         }
 
         stage('Package') {
-    steps {
-        sh '''
-        zip -r artifact.zip website.html build/* || true
-        '''
-    }
-}
+            steps {
+                sh 'zip -r artifact.zip website.html build/* || true'
+            }
+        }
 
         stage('Upload to Artifactory') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'jfrog-creds', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
                     sh """
                         curl -u $ART_USER:$ART_PASS -T ${ARTIFACT_NAME}.zip \
-    "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/${ARTIFACT_NAME}.zip"
-
+                        "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/${ARTIFACT_NAME}.zip"
                     """
                 }
             }
         }
 
-     stage('depoying on Ec2'){
-         steps{
-             sh '''
-             ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${EC2_USER}@${EC2_INSTANCE_IP} <<EOF
-             sudo yum install -y httpd
-            cd /tmp &&
-            curl -H "Authorization: Bearer cmVmdGtuOjAxOjE3Nzg3NjExODQ6MTV3UTl2YWdsbGRKdG12SGlIWmxUZ2x1SHNR" -O "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/artifact.zip" &&
-            sudo unzip -o artifact.zip -d /var/www/html/
-            sudo systemctl restart httpd
-            EOF
-             '''
-         }
-     }
+        stage('Deploy on EC2') {
+            steps {
+                sh """
+                ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${EC2_USER}@${EC2_INSTANCE_IP} <<EOF
+                    sudo yum install -y httpd
+                    cd /tmp
+                    curl -H "Authorization: Bearer cmVmdGtuOjAxOjE3Nzg3NjExODQ6MTV3UTl2YWdsbGRKdG12SGlIWmxUZ2x1SHNR" \\
+                         -O "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/${ARTIFACT_NAME}.zip"
+                    sudo unzip -o artifact.zip -d /var/www/html/
+                    sudo systemctl restart httpd
+                EOF
+                """
+            }
+        }
     }
 }
