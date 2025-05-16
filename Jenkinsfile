@@ -5,7 +5,7 @@ pipeline {
  
         ARTIFACTORY_URL = 'https://trialmewlv1.jfrog.io/artifactory'
  
-        ARTIFACTORY_REPO = 'taskrepo-generic-local'
+        ARTIFACTORY_REPO = 'firstrepo'
  
         ARTIFACTORY_PATH = "app/${BUILD_NUMBER}"
  
