@@ -1,54 +1,113 @@
 pipeline {
+ 
     agent any
-
     environment {
-        ARTIFACTORY_URL = 'https://trialx3clu6.jfrog.io/artifactory'
-        ARTIFACTORY_REPO = 'firstrepo'
-        ARTIFACT_NAME = 'artifact'
+ 
+        ARTIFACTORY_URL = 'https://trialmewlv1.jfrog.io/artifactory'
+ 
+        ARTIFACTORY_REPO = 'taskrepo-generic-local'
+ 
+        ARTIFACTORY_PATH = "app/${BUILD_NUMBER}"
+ 
+        ARTIFACTORY_CREDENTIALS_ID = 'jfrog-creds'
+ 
+        ARTIFACT_NAME = 'artifact.zip'
         EC2_INSTANCE_IP = '52.1.23.80'
-        EC2_USER = 'ec2-user'
-        SSH_KEY_PATH = '/var/lib/jenkins/.ssh/webserver.pem'
+        EC2_USER = 'ec2-user' // Adjust based on your EC2 instance's user
+        SSH_KEY_PATH = '/home/gautam/my_new_key.pem' // Path to your private SSH key
+ 
+ 
     }
-
-    triggers {
-        githubPush()
-    }
-
     stages {
-        stage('Checkout') {
+ 
+        stage('Checkout Code') {
+ 
             steps {
-                git branch: 'main', credentialsId: 'github-creds-id', url: 'https://github.com/GoutamTx/task.git'
+ 
+                git branch: 'main', url: 'https://github.com/GoutamTx/task.git'
+ 
             }
+ 
         }
-
-        stage('Package') {
+        stage('Archive Code') {
+ 
             steps {
-                sh 'zip -r artifact.zip website.html build/* || true'
+ 
+                sh '''
+ 
+                echo "Creating artifact.zip..."
+ 
+                zip -r ${ARTIFACT_NAME} . -x ".git/*" ".git" "*.log" "*.tmp" "*jenkins*" || exit 1
+ 
+                '''
+ 
             }
+ 
         }
-
         stage('Upload to Artifactory') {
+ 
             steps {
-                withCredentials([usernamePassword(credentialsId: 'jfrog-creds', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
+ 
+                withCredentials([usernamePassword(
+ 
+                    credentialsId: "${env.ARTIFACTORY_CREDENTIALS_ID}",
+ 
+                    usernameVariable: 'ART_USER',
+ 
+                    passwordVariable: 'ART_PASS'
+ 
+                )]) {
+ 
+                    sh '''
+ 
+                    echo "Uploading ${ARTIFACT_NAME} to Artifactory..."
+ 
+                    curl -u "$ART_USER:$ART_PASS" -T "${ARTIFACT_NAME}" "$ARTIFACTORY_URL/$ARTIFACTORY_REPO/$ARTIFACTORY_PATH/${ARTIFACT_NAME}"
+ 
+                    '''
+ 
+                }
+ 
+            }
+ 
+        }
+       stage('Deploying on EC2') {
+            steps {
+                withCredentials([
+                    file(credentialsId: 'ec2-user', variable: 'SSH_KEY'),
+                    usernamePassword(credentialsId: 'jfrog-creds', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')
+                ]) {
                     sh """
-                        curl -u $ART_USER:$ART_PASS -T ${ARTIFACT_NAME}.zip \
-                        "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/myapp/${BUILD_NUMBER}/${ARTIFACT_NAME}.zip"
-                    """
+                    ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ${EC2_USER}@${EC2_INSTANCE_IP} '
+                        ART_USER="${ART_USER}"
+                        ART_PASS="${ART_PASS}"
+                        sudo apt update -y
+                        sudo apt install -y apache2 unzip curl
+                        cd /tmp
+                        wget --user="\${ART_USER}" --password="\${ART_PASS}" -O ${ARTIFACT_NAME} "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/${ARTIFACTORY_PATH}/${ARTIFACT_NAME}"
+                        sudo unzip -o ${ARTIFACT_NAME} -d /var/www/html/
+                        sudo systemctl restart apache2
+                    '
+                """
                 }
             }
-        }
-
-        stage('Deploy on EC2') {
-            steps {
-                sh """
-                ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${EC2_USER}@${EC2_INSTANCE_IP} <<EOF
-                    sudo yum install -y httpd
-                    wget --user="${ART_USER}" --password="${ART_PASS}" -O /tmp/${ARTIFACT_NAME} "$ARTIFACTORY_URL/$ARTIFACTORY_REPO/$ARTIFACTORY_PATH/${ARTIFACT_NAME}"
-                    sudo unzip -o artifact.zip -d /var/www/html/
-                    sudo systemctl restart httpd
-                EOF
-                """
-            }
-        }
+       }
     }
+    post {
+ 
+        success {
+ 
+            echo "✅ Uploaded artifact.zip to Artifactory successfully!"
+ 
+        }
+ 
+        failure {
+ 
+            echo "❌ Failed to upload artifact."
+ 
+        }
+ 
+    }
+ 
 }
+ 
