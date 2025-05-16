@@ -3,7 +3,7 @@ pipeline {
     agent any
     environment {
  
-        ARTIFACTORY_URL = 'https://trialmewlv1.jfrog.io/artifactory'
+        ARTIFACTORY_URL = 'https://trialx3clu6.jfrog.io//artifactory'
  
         ARTIFACTORY_REPO = 'firstrepo'
  
