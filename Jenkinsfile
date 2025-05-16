@@ -14,7 +14,6 @@ pipeline {
         ARTIFACT_NAME = 'artifact.zip'
         EC2_INSTANCE_IP = '52.1.23.80'
         EC2_USER = 'ec2-user' // Adjust based on your EC2 instance's user
-        SSH_KEY_PATH = '/home/gautam/my_new_key.pem' // Path to your private SSH key
  
  
     }
