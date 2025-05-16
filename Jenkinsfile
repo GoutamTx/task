@@ -5,7 +5,7 @@ pipeline {
         ARTIFACTORY_URL = 'https://trialx3clu6.jfrog.io/artifactory'
         ARTIFACTORY_REPO = 'firstrepo'
         ARTIFACT_NAME = 'artifact'
-        EC2_INSTANCE_IP = '3.91.252.181'
+        EC2_INSTANCE_IP = '52.1.23.80'
         EC2_USER = 'ec2-user'
         SSH_KEY_PATH = '/var/lib/jenkins/.ssh/webserver.pem'
     }
