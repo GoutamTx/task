@@ -62,7 +62,7 @@ pipeline {
  
                     echo "Uploading ${ARTIFACT_NAME} to Artifactory..."
  
-                    curl -u "$ART_USER:$ART_PASS" -T "${ARTIFACT_NAME}" "$ARTIFACTORY_URL/$ARTIFACTORY_REPO/$ARTIFACTORY_PATH/${ARTIFACT_NAME}"
+                    curl -H "cmVmdGtuOjAxOjE3Nzg3NjExODQ6MTV3UTl2YWdsbGRKdG12SGlIWmxUZ2x1SHNR" -T artifact.zip  $ARTIFACTORY_URL/$ARTIFACTORY_REPO/$ARTIFACTORY_PATH/${ARTIFACT_NAME}
  
                     '''
  
