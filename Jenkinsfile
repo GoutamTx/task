@@ -74,7 +74,7 @@ pipeline {
        stage('Deploying on EC2') {
             steps {
                 withCredentials([
-                    file(credentialsId: 'ec2-user', variable: 'SSH_KEY'),
+                    file(credentialsId: 'ec2-id', variable: 'SSH_KEY'),
                     usernamePassword(credentialsId: 'jfrog-creds', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')
                 ]) {
                     sh """
