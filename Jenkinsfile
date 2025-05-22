@@ -28,85 +28,85 @@ pipeline {
             }
  
         }
-        stage('Archive Code') {
+    //     stage('Archive Code') {
  
-            steps {
+    //         steps {
  
-                sh '''
+    //             sh '''
  
-                echo "Creating artifact.zip..."
+    //             echo "Creating artifact.zip..."
  
-                zip -r ${ARTIFACT_NAME} . -x ".git/*" ".git" "*.log" "*.tmp" "*jenkins*" || exit 1
+    //             zip -r ${ARTIFACT_NAME} . -x ".git/*" ".git" "*.log" "*.tmp" "*jenkins*" || exit 1
  
-                '''
+    //             '''
  
-            }
+    //         }
  
-        }
-        stage('Upload to Artifactory') {
+    //     }
+    //     stage('Upload to Artifactory') {
  
-            steps {
+    //         steps {
  
-                withCredentials([usernamePassword(
+    //             withCredentials([usernamePassword(
  
-                    credentialsId: "${env.ARTIFACTORY_CREDENTIALS_ID}",
+    //                 credentialsId: "${env.ARTIFACTORY_CREDENTIALS_ID}",
  
-                    usernameVariable: 'ART_USER',
+    //                 usernameVariable: 'ART_USER',
  
-                    passwordVariable: 'ART_PASS'
+    //                 passwordVariable: 'ART_PASS'
  
-                )]) {
+    //             )]) {
  
-                    sh '''
+    //                 sh '''
  
-                    echo "Uploading ${ARTIFACT_NAME} to Artifactory..."
+    //                 echo "Uploading ${ARTIFACT_NAME} to Artifactory..."
  
-                    curl -H "Authorization: Bearer cmVmdGtuOjAxOjE3Nzg3NjExODQ6MTV3UTl2YWdsbGRKdG12SGlIWmxUZ2x1SHNR" -T artifact.zip  "$ARTIFACTORY_URL/$ARTIFACTORY_REPO/$ARTIFACTORY_PATH/${ARTIFACT_NAME}"
+    //                 curl -H "Authorization: Bearer cmVmdGtuOjAxOjE3Nzg3NjExODQ6MTV3UTl2YWdsbGRKdG12SGlIWmxUZ2x1SHNR" -T artifact.zip  "$ARTIFACTORY_URL/$ARTIFACTORY_REPO/$ARTIFACTORY_PATH/${ARTIFACT_NAME}"
  
-                    '''
+    //                 '''
  
-                }
+    //             }
  
-            }
+    //         }
  
-        }
-       stage('Deploying on EC2') {
-            steps {
-                withCredentials([
-                    file(credentialsId: 'ec2-id', variable: 'SSH_KEY'),
-                    usernamePassword(credentialsId: 'jfrog-creds', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')
-                ]) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ${EC2_USER}@${EC2_INSTANCE_IP} '
-                        ART_USER="${ART_USER}"
-                        ART_PASS="${ART_PASS}"
-                        sudo apt update -y
-                        sudo apt install -y apache2 unzip curl
-                        cd /tmp
-                        wget --user="\${ART_USER}" --password="\${ART_PASS}" -O ${ARTIFACT_NAME} "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/${ARTIFACTORY_PATH}/${ARTIFACT_NAME}"
-                        sudo unzip -o ${ARTIFACT_NAME} -d /var/www/html/
-                        sudo systemctl restart apache2
-                    '
-                """
-                }
-            }
-       }
-    }
-    post {
+    //     }
+    //    stage('Deploying on EC2') {
+    //         steps {
+    //             withCredentials([
+    //                 file(credentialsId: 'ec2-id', variable: 'SSH_KEY'),
+    //                 usernamePassword(credentialsId: 'jfrog-creds', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')
+    //             ]) {
+    //                 sh """
+    //                 ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ${EC2_USER}@${EC2_INSTANCE_IP} '
+    //                     ART_USER="${ART_USER}"
+    //                     ART_PASS="${ART_PASS}"
+    //                     sudo apt update -y
+    //                     sudo apt install -y apache2 unzip curl
+    //                     cd /tmp
+    //                     wget --user="\${ART_USER}" --password="\${ART_PASS}" -O ${ARTIFACT_NAME} "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/${ARTIFACTORY_PATH}/${ARTIFACT_NAME}"
+    //                     sudo unzip -o ${ARTIFACT_NAME} -d /var/www/html/
+    //                     sudo systemctl restart apache2
+    //                 '
+    //             """
+    //             }
+    //         }
+    //    }
+    // }
+    // post {
  
-        success {
+    //     success {
  
-            echo "✅ Uploaded artifact.zip to Artifactory successfully!"
+    //         echo "✅ Uploaded artifact.zip to Artifactory successfully!"
  
-        }
+    //     }
  
-        failure {
+    //     failure {
  
-            echo "❌ Failed to upload artifact."
+    //         echo "❌ Failed to upload artifact."
  
-        }
+    //     }
  
-    }
+    // }
  
 }
  
